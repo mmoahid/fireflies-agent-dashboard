@@ -7,19 +7,18 @@ import { TodayProgress } from "@/components/today-progress"
 import { ControlPanel } from "@/components/control-panel"
 import { fetchDashboardData, saveObjective } from "@/lib/actions"
 import { getAgendaStats, getNextAction } from "@/lib/dashboard"
-import { systemStatus } from "@/lib/system-status"
 
 export const dynamic = "force-dynamic"
 
 export default async function DashboardPage() {
-  const { objective, agendaItems, recentMeetings } = await fetchDashboardData()
+  const { objective, agendaItems, recentMeetings, userProfile, userSettings, systemStatus } = await fetchDashboardData()
 
   const nextAction = getNextAction()
   const agendaStats = getAgendaStats(agendaItems)
 
   return (
     <div className="space-y-6">
-      <DashboardHeader systemStatus={systemStatus} />
+      <DashboardHeader systemStatus={systemStatus} displayName={userProfile.displayName} />
 
       <ObjectiveCard objective={objective} onSave={saveObjective} />
 
@@ -32,7 +31,7 @@ export default async function DashboardPage() {
         <div className="space-y-6">
           <TodayProgress stats={agendaStats} />
           <RecentContextFeed meetings={recentMeetings} />
-          <ControlPanel />
+          <ControlPanel settings={userSettings} />
         </div>
       </div>
     </div>

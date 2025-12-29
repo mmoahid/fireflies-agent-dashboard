@@ -6,9 +6,10 @@ import type { SystemStatusInfo } from "@/lib/types"
 
 interface DashboardHeaderProps {
   systemStatus: SystemStatusInfo
+  displayName?: string
 }
 
-export function DashboardHeader({ systemStatus }: DashboardHeaderProps) {
+export function DashboardHeader({ systemStatus, displayName }: DashboardHeaderProps) {
   const [currentTime, setCurrentTime] = useState<string>("")
   const [currentDate, setCurrentDate] = useState<string>("")
 
@@ -65,7 +66,9 @@ export function DashboardHeader({ systemStatus }: DashboardHeaderProps) {
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div>
-        <h1 className="text-2xl font-bold text-foreground">Welcome back, Kam</h1>
+        <h1 className="text-2xl font-bold text-foreground">
+          Welcome back{displayName ? `, ${displayName}` : ""}
+        </h1>
         <p className="text-muted-foreground">
           {currentDate} {currentTime && `• ${currentTime}`}
         </p>

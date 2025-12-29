@@ -149,3 +149,26 @@ model JobQueue {
   @@index([status, createdAt])
   @@map("job_queue")
 }
+
+model UserProfile {
+  id          String   @id @default(uuid()) @db.Uuid
+  key         String   @unique
+  displayName String   @map("display_name")
+  timezone    String?  @map("timezone")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("user_profiles")
+}
+
+model UserSettings {
+  id            String   @id @default(uuid()) @db.Uuid
+  key           String   @unique
+  manualOverride Boolean @default(false) @map("manual_override")
+  autoSync      Boolean  @default(true) @map("auto_sync")
+  notifications Boolean  @default(true)
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@map("user_settings")
+}

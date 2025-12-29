@@ -38,7 +38,7 @@ export function RecentContextFeed({ meetings }: RecentContextFeedProps) {
               <div className="flex items-center justify-between gap-2">
                 {meeting.kamParticipated ? (
                   <Badge variant="outline" className="border-primary text-primary shrink-0">
-                    Kam Present
+                    Owner Present
                   </Badge>
                 ) : (
                   <span />

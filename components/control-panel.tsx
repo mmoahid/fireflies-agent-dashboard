@@ -7,10 +7,14 @@ import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import { Zap, RefreshCw } from "lucide-react"
 import { toast } from "sonner"
-import { triggerSync } from "@/lib/actions"
+import { queueFirefliesSync, triggerSync, updateUserSettings } from "@/lib/actions"
 
-export function ControlPanel() {
-  const [manualOverride, setManualOverride] = useState(false)
+interface ControlPanelProps {
+  settings: { manualOverride: boolean; autoSync: boolean; notifications: boolean }
+}
+
+export function ControlPanel({ settings }: ControlPanelProps) {
+  const [manualOverride, setManualOverride] = useState(settings.manualOverride)
   const [isPending, startTransition] = useTransition()
 
   const queueSync = (type: "morning" | "afternoon") => {
@@ -21,6 +25,30 @@ export function ControlPanel() {
       } catch (err) {
         const message = err instanceof Error ? err.message : "Failed to queue job"
         toast.error("Could not queue job", { description: message })
+      }
+    })
+  }
+
+  const queueMeetingSync = () => {
+    startTransition(async () => {
+      try {
+        const job = await queueFirefliesSync()
+        toast.success("Meeting sync queued", { description: `${job.type} (${job.status})` })
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Failed to queue meeting sync"
+        toast.error("Could not queue meeting sync", { description: message })
+      }
+    })
+  }
+
+  const handleManualOverride = (value: boolean) => {
+    setManualOverride(value)
+    startTransition(async () => {
+      try {
+        await updateUserSettings({ manualOverride: value })
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Failed to update setting"
+        toast.error("Could not save setting", { description: message })
       }
     })
   }
@@ -41,16 +69,16 @@ export function ControlPanel() {
             </Label>
             <p className="text-xs text-muted-foreground">Disable automatic agenda generation</p>
           </div>
-          <Switch id="manual-override" checked={manualOverride} onCheckedChange={setManualOverride} />
+          <Switch id="manual-override" checked={manualOverride} onCheckedChange={handleManualOverride} />
         </div>
         <Button
           variant="outline"
           className="w-full gap-2 bg-transparent"
-          onClick={() => queueSync("morning")}
+          onClick={queueMeetingSync}
           disabled={isPending}
         >
           <RefreshCw className="h-4 w-4" />
-          Big Bang Initialization
+          Sync Meetings (Fireflies)
         </Button>
 
         <div className="grid gap-2 sm:grid-cols-2">

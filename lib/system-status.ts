@@ -1,9 +1,16 @@
-import type { SystemStatusInfo } from "@/lib/types"
+import "server-only"
 
-export const systemStatus: SystemStatusInfo = {
-  fireflies: "connected",
-  gemini: "connected",
-  agendaSystem: "connected",
-  googleDocs: "connected",
+import type { SystemStatusInfo } from "@/lib/types"
+import { env } from "@/lib/env"
+
+export function getSystemStatus(): SystemStatusInfo {
+  const e = env()
+
+  return {
+    fireflies: e.FIREFLIES_API_KEY ? "connected" : "disconnected",
+    gemini: e.GEMINI_API_KEY ? "connected" : "disconnected",
+    agendaSystem: "connected",
+    googleDocs: "disconnected",
+  }
 }
 

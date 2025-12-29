@@ -9,7 +9,7 @@ import { TodayProgress } from "@/components/today-progress"
 import { ArrowLeft, RefreshCw } from "lucide-react"
 import type { AgendaItem, CompanyObjective } from "@/lib/types"
 import { getAgendaStats } from "@/lib/dashboard"
-import { saveObjective, triggerSync, updateAgendaStatus } from "@/lib/actions"
+import { queueFirefliesSync, saveObjective, updateAgendaStatus } from "@/lib/actions"
 import { toast } from "sonner"
 
 interface MorningSyncPageClientProps {
@@ -62,8 +62,8 @@ export function MorningSyncPageClient({ objective, items: initialItems, previous
           onClick={() =>
             startTransition(async () => {
               try {
-                const job = await triggerSync("morning")
-                toast.success("Meeting scan queued", { description: `${job.type} (${job.status})` })
+                const job = await queueFirefliesSync()
+                toast.success("Meeting sync queued", { description: `${job.type} (${job.status})` })
               } catch (err) {
                 const message = err instanceof Error ? err.message : "Failed to queue job"
                 toast.error("Could not queue job", { description: message })

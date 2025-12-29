@@ -1,12 +1,11 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
 import { getAllMeetings } from "@/lib/actions"
+import { SyncMeetingsButton } from "@/components/sync-meetings-button"
 import {
   Video,
   ExternalLink,
-  RefreshCw,
   Lightbulb,
   AlertTriangle,
   FileCheck,
@@ -66,10 +65,7 @@ export default async function MeetingsPage() {
           <h1 className="text-2xl font-bold text-foreground">Meeting Log</h1>
           <p className="text-muted-foreground">All meetings captured by Fireflies.ai with extracted insights</p>
         </div>
-        <Button variant="outline" className="gap-2 bg-transparent">
-          <RefreshCw className="h-4 w-4" />
-          Sync Meetings
-        </Button>
+        <SyncMeetingsButton />
       </div>
 
       <Card>
@@ -110,11 +106,7 @@ export default async function MeetingsPage() {
                     <TableCell>
                       <div className="flex flex-wrap gap-1">
                         {meeting.participants.map((participant) => (
-                          <Badge
-                            key={participant}
-                            variant={participant === "Kam" ? "default" : "outline"}
-                            className={participant === "Kam" ? "bg-primary text-primary-foreground" : ""}
-                          >
+                          <Badge key={participant} variant="outline">
                             {participant}
                           </Badge>
                         ))}

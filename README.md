@@ -32,14 +32,14 @@ Continue building your app on:
 ## Local Setup (Supabase + Prisma)
 
 1. Create a Supabase project (PostgreSQL).
-2. Copy `.env.example` to `.env.local` and fill in `DATABASE_URL` (and worker vars if you want the Python worker).
+2. Copy `.env.example` to `.env.local` and fill in `DATABASE_URL`, `DIRECT_URL`, `FIREFLIES_API_KEY`, and `DASHBOARD_USERNAME`/`DASHBOARD_PASSWORD`.
 3. Install deps: `pnpm install`
 4. Create tables: `pnpm prisma:migrate --name init` (uses `DIRECT_URL` if set)
 5. Start Next.js: `pnpm dev`
 
 ## Python Worker
 
-The background worker polls the `job_queue` table and simulates processing.
+The background worker polls the `job_queue` table and processes jobs (e.g., syncing Fireflies transcripts).
 
 - Install deps: `pip install supabase`
 - Run: `python worker.py`

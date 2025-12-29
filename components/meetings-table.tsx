@@ -63,11 +63,7 @@ export function MeetingsTable({ meetings }: MeetingsTableProps) {
                   <TableCell>
                     <div className="flex flex-wrap gap-1">
                       {meeting.participants.map((participant) => (
-                        <Badge
-                          key={participant}
-                          variant={participant === "Kam" ? "default" : "outline"}
-                          className={participant === "Kam" ? "bg-primary text-primary-foreground" : ""}
-                        >
+                        <Badge key={participant} variant="outline">
                           {participant}
                         </Badge>
                       ))}

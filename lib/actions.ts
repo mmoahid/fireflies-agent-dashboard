@@ -3,6 +3,9 @@
 import { revalidatePath } from "next/cache"
 import { prisma } from "@/lib/prisma"
 import { AgendaStatus } from "@prisma/client"
+import { env } from "@/lib/env"
+import { getSystemStatus } from "@/lib/system-status"
+import { firefliesPing } from "@/lib/fireflies"
 
 function todayDateOnly() {
   const d = new Date()
@@ -20,7 +23,7 @@ function addDays(date: Date, days: number) {
 export async function fetchDashboardData() {
   const today = todayDateOnly()
 
-  const [objective, agendaItems, recentMeetings] = await Promise.all([
+  const [objective, agendaItems, recentMeetings, userProfile, userSettings, systemStatus] = await Promise.all([
     prisma.companyObjective.findUnique({ where: { key: "current" } }),
     prisma.agendaItem.findMany({
       where: { dayDate: today },
@@ -32,6 +35,19 @@ export async function fetchDashboardData() {
       take: 3,
       include: { extractedInsights: true },
     }),
+    prisma.userProfile.upsert({
+      where: { key: "default" },
+      create: { key: "default", displayName: env().DASHBOARD_USERNAME },
+      update: {},
+      select: { displayName: true },
+    }),
+    prisma.userSettings.upsert({
+      where: { key: "default" },
+      create: { key: "default" },
+      update: {},
+      select: { manualOverride: true, autoSync: true, notifications: true },
+    }),
+    Promise.resolve(getSystemStatus()),
   ])
 
   const ensuredObjective =
@@ -43,14 +59,14 @@ export async function fetchDashboardData() {
       },
     }))
 
-  return { objective: ensuredObjective, agendaItems, recentMeetings }
+  return { objective: ensuredObjective, agendaItems, recentMeetings, userProfile, userSettings, systemStatus }
 }
 
 export async function fetchMorningSyncData() {
   const today = todayDateOnly()
   const yesterday = addDays(today, -1)
 
-  const [objective, items, previousDayItems] = await Promise.all([
+  const [objective, items, previousDayItems, userProfile, systemStatus] = await Promise.all([
     prisma.companyObjective.findUnique({ where: { key: "current" } }),
     prisma.agendaItem.findMany({
       where: { dayDate: today },
@@ -60,6 +76,13 @@ export async function fetchMorningSyncData() {
       where: { dayDate: yesterday },
       orderBy: [{ category: "asc" }, { priority: "asc" }, { createdAt: "asc" }],
     }),
+    prisma.userProfile.upsert({
+      where: { key: "default" },
+      create: { key: "default", displayName: env().DASHBOARD_USERNAME },
+      update: {},
+      select: { displayName: true },
+    }),
+    Promise.resolve(getSystemStatus()),
   ])
 
   const ensuredObjective =
@@ -71,18 +94,25 @@ export async function fetchMorningSyncData() {
       },
     }))
 
-  return { objective: ensuredObjective, items, previousDayItems }
+  return { objective: ensuredObjective, items, previousDayItems, userProfile, systemStatus }
 }
 
 export async function fetchAfternoonWrapupData() {
   const today = todayDateOnly()
 
-  const [objective, items] = await Promise.all([
+  const [objective, items, userProfile, systemStatus] = await Promise.all([
     prisma.companyObjective.findUnique({ where: { key: "current" } }),
     prisma.agendaItem.findMany({
       where: { dayDate: today },
       orderBy: [{ category: "asc" }, { priority: "asc" }, { createdAt: "asc" }],
     }),
+    prisma.userProfile.upsert({
+      where: { key: "default" },
+      create: { key: "default", displayName: env().DASHBOARD_USERNAME },
+      update: {},
+      select: { displayName: true },
+    }),
+    Promise.resolve(getSystemStatus()),
   ])
 
   const ensuredObjective =
@@ -94,7 +124,7 @@ export async function fetchAfternoonWrapupData() {
       },
     }))
 
-  return { objective: ensuredObjective, items }
+  return { objective: ensuredObjective, items, userProfile, systemStatus }
 }
 
 export async function triggerSync(type: "morning" | "afternoon") {
@@ -119,6 +149,23 @@ export async function triggerSync(type: "morning" | "afternoon") {
   return job
 }
 
+export async function queueFirefliesSync() {
+  const job = await prisma.jobQueue.create({
+    data: {
+      type: "SYNC_FIREFLIES_ALL",
+      status: "PENDING",
+      payload: { requestedAt: new Date().toISOString(), requestedBy: "dashboard" },
+    },
+    select: { id: true, type: true, status: true, createdAt: true },
+  })
+
+  revalidatePath("/")
+  revalidatePath("/meetings")
+  revalidatePath("/morning-sync")
+
+  return job
+}
+
 export async function getRecentMeetings() {
   return prisma.meeting.findMany({
     orderBy: { dateTime: "desc" },
@@ -132,6 +179,44 @@ export async function getAllMeetings() {
     orderBy: { dateTime: "desc" },
     include: { extractedInsights: true },
   })
+}
+
+export async function fetchSettingsData() {
+  const [userProfile, userSettings, systemStatus] = await Promise.all([
+    prisma.userProfile.upsert({
+      where: { key: "default" },
+      create: { key: "default", displayName: env().DASHBOARD_USERNAME },
+      update: {},
+      select: { displayName: true },
+    }),
+    prisma.userSettings.upsert({
+      where: { key: "default" },
+      create: { key: "default" },
+      update: {},
+      select: { manualOverride: true, autoSync: true, notifications: true },
+    }),
+    Promise.resolve(getSystemStatus()),
+  ])
+
+  return { userProfile, userSettings, systemStatus }
+}
+
+export async function updateUserSettings(patch: Partial<{ manualOverride: boolean; autoSync: boolean; notifications: boolean }>) {
+  const updated = await prisma.userSettings.update({
+    where: { key: "default" },
+    data: patch,
+    select: { manualOverride: true, autoSync: true, notifications: true },
+  })
+
+  revalidatePath("/")
+  revalidatePath("/settings")
+
+  return updated
+}
+
+export async function checkFirefliesConnection() {
+  const user = await firefliesPing()
+  return { ok: true as const, user }
 }
 
 export async function updateAgendaStatus(id: string, status: string) {
