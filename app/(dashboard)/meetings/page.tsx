@@ -2,7 +2,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { mockMeetings } from "@/lib/mock-data"
+import { getAllMeetings } from "@/lib/actions"
 import {
   Video,
   ExternalLink,
@@ -14,7 +14,9 @@ import {
   LocateIcon as UpdateIcon,
 } from "lucide-react"
 
-export default function MeetingsPage() {
+export const dynamic = "force-dynamic"
+
+export default async function MeetingsPage() {
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleDateString("en-US", {
       month: "short",
@@ -55,6 +57,8 @@ export default function MeetingsPage() {
     }
   }
 
+  const meetings = await getAllMeetings()
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -90,7 +94,7 @@ export default function MeetingsPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {mockMeetings.map((meeting) => (
+                {meetings.map((meeting) => (
                   <TableRow key={meeting.id}>
                     <TableCell className="whitespace-nowrap text-muted-foreground">
                       {formatDate(meeting.dateTime)}

@@ -28,3 +28,18 @@ Continue building your app on:
 2. Deploy your chats from the v0 interface
 3. Changes are automatically pushed to this repository
 4. Vercel deploys the latest version from this repository
+
+## Local Setup (Supabase + Prisma)
+
+1. Create a Supabase project (PostgreSQL).
+2. Copy `.env.example` to `.env.local` and fill in `DATABASE_URL` (and worker vars if you want the Python worker).
+3. Install deps: `pnpm install`
+4. Create tables: `pnpm prisma:migrate --name init` (uses `DIRECT_URL` if set)
+5. Start Next.js: `pnpm dev`
+
+## Python Worker
+
+The background worker polls the `job_queue` table and simulates processing.
+
+- Install deps: `pip install supabase`
+- Run: `python worker.py`

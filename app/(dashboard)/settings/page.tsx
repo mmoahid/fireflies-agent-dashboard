@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Settings, Link2, Bot, FileText, RefreshCw, Save, CheckCircle } from "lucide-react"
-import { mockSystemStatus } from "@/lib/mock-data"
+import { systemStatus } from "@/lib/system-status"
 
 export default function SettingsPage() {
   const [manualOverride, setManualOverride] = useState(false)
@@ -56,8 +56,8 @@ export default function SettingsPage() {
                 </div>
               </div>
               <Badge variant="outline" className="gap-1.5">
-                <span className={`h-2 w-2 rounded-full ${getStatusColor(mockSystemStatus.fireflies)}`} />
-                {mockSystemStatus.fireflies}
+                <span className={`h-2 w-2 rounded-full ${getStatusColor(systemStatus.fireflies)}`} />
+                {systemStatus.fireflies}
               </Badge>
             </div>
 
@@ -72,8 +72,8 @@ export default function SettingsPage() {
                 </div>
               </div>
               <Badge variant="outline" className="gap-1.5">
-                <span className={`h-2 w-2 rounded-full ${getStatusColor(mockSystemStatus.gemini)}`} />
-                {mockSystemStatus.gemini}
+                <span className={`h-2 w-2 rounded-full ${getStatusColor(systemStatus.gemini)}`} />
+                {systemStatus.gemini}
               </Badge>
             </div>
 
@@ -88,8 +88,8 @@ export default function SettingsPage() {
                 </div>
               </div>
               <Badge variant="outline" className="gap-1.5">
-                <span className={`h-2 w-2 rounded-full ${getStatusColor(mockSystemStatus.googleDocs)}`} />
-                {mockSystemStatus.googleDocs}
+                <span className={`h-2 w-2 rounded-full ${getStatusColor(systemStatus.googleDocs)}`} />
+                {systemStatus.googleDocs}
               </Badge>
             </div>
           </CardContent>

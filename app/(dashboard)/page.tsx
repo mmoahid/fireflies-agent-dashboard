@@ -5,24 +5,23 @@ import { RecentContextFeed } from "@/components/recent-context-feed"
 import { ObjectiveCard } from "@/components/objective-card"
 import { TodayProgress } from "@/components/today-progress"
 import { ControlPanel } from "@/components/control-panel"
-import {
-  mockSystemStatus,
-  mockObjective,
-  getNextAction,
-  getRecentMeetingsWithKam,
-  getAgendaStats,
-} from "@/lib/mock-data"
+import { fetchDashboardData, saveObjective } from "@/lib/actions"
+import { getAgendaStats, getNextAction } from "@/lib/dashboard"
+import { systemStatus } from "@/lib/system-status"
 
-export default function DashboardPage() {
+export const dynamic = "force-dynamic"
+
+export default async function DashboardPage() {
+  const { objective, agendaItems, recentMeetings } = await fetchDashboardData()
+
   const nextAction = getNextAction()
-  const recentKamMeetings = getRecentMeetingsWithKam()
-  const agendaStats = getAgendaStats()
+  const agendaStats = getAgendaStats(agendaItems)
 
   return (
     <div className="space-y-6">
-      <DashboardHeader systemStatus={mockSystemStatus} />
+      <DashboardHeader systemStatus={systemStatus} />
 
-      <ObjectiveCard objective={mockObjective} />
+      <ObjectiveCard objective={objective} onSave={saveObjective} />
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">
@@ -32,7 +31,7 @@ export default function DashboardPage() {
 
         <div className="space-y-6">
           <TodayProgress stats={agendaStats} />
-          <RecentContextFeed meetings={recentKamMeetings} />
+          <RecentContextFeed meetings={recentMeetings} />
           <ControlPanel />
         </div>
       </div>

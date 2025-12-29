@@ -66,4 +66,5 @@ export interface SystemStatusInfo {
   fireflies: SystemStatus
   gemini: SystemStatus
   agendaSystem: SystemStatus
+  googleDocs: SystemStatus
 }

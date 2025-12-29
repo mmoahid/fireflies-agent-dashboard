@@ -1,0 +1,151 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum MeetingStatus {
+  pending
+  processed
+  error
+}
+
+enum InsightCategory {
+  action_item
+  decision
+  blocker
+  update
+  follow_up
+}
+
+enum AgendaStatus {
+  pending
+  in_progress
+  completed
+  carried_over
+}
+
+enum AgendaPriority {
+  high
+  medium
+  low
+}
+
+enum AfternoonStatus {
+  not_started
+  in_progress
+  completed
+}
+
+enum SystemLogStatus {
+  success
+  error
+  pending
+}
+
+model Meeting {
+  id                String             @id @default(uuid()) @db.Uuid
+  firefliesMeetingId String             @unique @map("fireflies_meeting_id")
+  title             String
+  dateTime          DateTime           @map("date_time")
+  participants      String[]
+  kamParticipated   Boolean            @map("kam_participated")
+  transcriptUrl     String?            @map("transcript_url")
+  summary           String?
+  status            MeetingStatus      @default(pending)
+  createdAt         DateTime           @default(now()) @map("created_at")
+  updatedAt         DateTime           @updatedAt @map("updated_at")
+
+  extractedInsights ExtractedInsight[]
+  agendaItems       AgendaItem[]       @relation("MeetingAgendaItems")
+
+  @@map("meetings")
+}
+
+model ExtractedInsight {
+  id             String         @id @default(uuid()) @db.Uuid
+  content        String
+  relevanceScore Int            @map("relevance_score")
+  category       InsightCategory
+  meetingId      String         @db.Uuid @map("meeting_id")
+  createdAt      DateTime       @default(now()) @map("created_at")
+  updatedAt      DateTime       @updatedAt @map("updated_at")
+
+  meeting        Meeting        @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+
+  @@index([meetingId])
+  @@map("extracted_insights")
+}
+
+model AgendaItem {
+  id               String         @id @default(uuid()) @db.Uuid
+  content          String
+  status           AgendaStatus   @default(pending)
+  priority         AgendaPriority @default(medium)
+  sourceMeetingId  String?        @db.Uuid @map("source_meeting_id")
+  sourceMeetingTitle String?      @map("source_meeting_title")
+  category         InsightCategory
+  progressNote     String?        @map("progress_note")
+  createdAt        DateTime       @default(now()) @map("created_at")
+  completedAt      DateTime?      @map("completed_at")
+  dayDate          DateTime       @db.Date @map("day_date")
+  dailySyncId      String?        @db.Uuid @map("daily_sync_id")
+
+  sourceMeeting    Meeting?       @relation("MeetingAgendaItems", fields: [sourceMeetingId], references: [id], onDelete: SetNull)
+  dailySync        DailySync?     @relation(fields: [dailySyncId], references: [id], onDelete: SetNull)
+
+  @@index([dayDate])
+  @@index([sourceMeetingId])
+  @@index([dailySyncId])
+  @@map("agenda_items")
+}
+
+model DailySync {
+  id              String          @id @default(uuid()) @db.Uuid
+  date            DateTime        @db.Date @unique
+  afternoonStatus AfternoonStatus @default(not_started) @map("afternoon_status")
+  morningNotes    String?         @map("morning_notes")
+  afternoonNotes  String?         @map("afternoon_notes")
+  createdAt       DateTime        @default(now()) @map("created_at")
+  updatedAt       DateTime        @updatedAt @map("updated_at")
+
+  morningAgendaItems AgendaItem[]
+
+  @@map("daily_syncs")
+}
+
+model CompanyObjective {
+  id        String   @id @default(uuid()) @db.Uuid
+  key       String   @unique
+  content   String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("company_objectives")
+}
+
+model SystemLog {
+  id        String         @id @default(uuid()) @db.Uuid
+  action    String
+  status    SystemLogStatus
+  message   String?
+  createdAt DateTime       @default(now()) @map("created_at")
+
+  @@map("system_logs")
+}
+
+model JobQueue {
+  id        String   @id @default(uuid()) @db.Uuid
+  type      String
+  status    String   @default("PENDING")
+  payload   Json?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([status, createdAt])
+  @@map("job_queue")
+}

@@ -1,24 +1,39 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useTransition } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Target, Pencil, Check, X } from "lucide-react"
 import type { CompanyObjective } from "@/lib/types"
+import { toast } from "sonner"
 
 interface ObjectiveCardProps {
   objective: CompanyObjective
-  onSave?: (content: string) => void
+  onSave?: (content: string) => unknown | Promise<unknown>
 }
 
 export function ObjectiveCard({ objective, onSave }: ObjectiveCardProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [content, setContent] = useState(objective.content)
+  const [isSaving, startTransition] = useTransition()
 
   const handleSave = () => {
-    onSave?.(content)
-    setIsEditing(false)
+    if (!onSave) {
+      setIsEditing(false)
+      return
+    }
+
+    startTransition(async () => {
+      try {
+        await onSave(content)
+        toast.success("Objective saved")
+        setIsEditing(false)
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Failed to save objective"
+        toast.error("Could not save objective", { description: message })
+      }
+    })
   }
 
   const handleCancel = () => {
@@ -66,11 +81,17 @@ export function ObjectiveCard({ objective, onSave }: ObjectiveCardProps) {
               placeholder="Enter your company objective..."
             />
             <div className="flex gap-2">
-              <Button size="sm" onClick={handleSave} className="gap-1.5">
+              <Button size="sm" onClick={handleSave} className="gap-1.5" disabled={isSaving}>
                 <Check className="h-3.5 w-3.5" />
                 Save
               </Button>
-              <Button size="sm" variant="outline" onClick={handleCancel} className="gap-1.5 bg-transparent">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleCancel}
+                className="gap-1.5 bg-transparent"
+                disabled={isSaving}
+              >
                 <X className="h-3.5 w-3.5" />
                 Cancel
               </Button>

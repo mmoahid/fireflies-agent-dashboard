@@ -12,6 +12,7 @@ export const mockSystemStatus: SystemStatusInfo = {
   fireflies: "connected",
   gemini: "connected",
   agendaSystem: "connected",
+  googleDocs: "connected",
 }
 
 export const mockObjective: CompanyObjective = {
