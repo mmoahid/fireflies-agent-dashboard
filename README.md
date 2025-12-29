@@ -42,4 +42,5 @@ Continue building your app on:
 The background worker polls the `job_queue` table and processes jobs (e.g., syncing Fireflies transcripts).
 
 - Install deps: `pip install supabase`
+- If you want `worker.py` to load `.env.local` automatically: `pip install python-dotenv`
 - Run: `python worker.py`

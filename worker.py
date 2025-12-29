@@ -16,6 +16,13 @@ def utc_now_iso() -> str:
 def utc_now_dt() -> datetime:
     return datetime.now(timezone.utc)
 
+def load_local_env() -> None:
+    try:
+        from dotenv import load_dotenv  # type: ignore
+    except Exception:
+        return
+    load_dotenv(".env.local")
+
 
 FIREFLIES_GRAPHQL_URL = "https://api.fireflies.ai/graphql"
 
@@ -147,6 +154,7 @@ def sync_fireflies_all(supabase, fireflies_api_key: str) -> int:
 
 
 def main() -> None:
+    load_local_env()
     supabase_url = os.environ["SUPABASE_URL"]
     supabase_service_role_key = os.environ["SUPABASE_SERVICE_ROLE_KEY"]
     fireflies_api_key = os.environ.get("FIREFLIES_API_KEY", "").strip()
