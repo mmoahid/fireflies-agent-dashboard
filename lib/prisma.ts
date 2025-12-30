@@ -1,6 +1,9 @@
 import { PrismaClient } from "@prisma/client"
+import { applySanitizedEnvToProcess } from "@/lib/env"
 
 const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient }
+
+applySanitizedEnvToProcess()
 
 export const prisma =
   globalForPrisma.prisma ??
@@ -9,4 +12,3 @@ export const prisma =
   })
 
 if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma
-

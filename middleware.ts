@@ -10,9 +10,21 @@ function unauthorized() {
   })
 }
 
+function normalize(value: string | undefined) {
+  if (!value) return ""
+  let v = value.trim()
+  if (
+    (v.startsWith('"') && v.endsWith('"') && v.length >= 2) ||
+    (v.startsWith("'") && v.endsWith("'") && v.length >= 2)
+  ) {
+    v = v.slice(1, -1).trim()
+  }
+  return v
+}
+
 export function middleware(request: NextRequest) {
-  const username = process.env.DASHBOARD_USERNAME
-  const password = process.env.DASHBOARD_PASSWORD
+  const username = normalize(process.env.DASHBOARD_USERNAME)
+  const password = normalize(process.env.DASHBOARD_PASSWORD)
 
   if (!username || !password) return NextResponse.next()
 
@@ -36,4 +48,3 @@ export function middleware(request: NextRequest) {
 export const config = {
   matcher: ["/((?!_next|.*\\..*).*)"],
 }
-
