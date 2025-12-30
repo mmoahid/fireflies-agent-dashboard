@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache"
 import { prisma } from "@/lib/prisma"
-import { AgendaStatus } from "@prisma/client"
+import { AgendaStatus, Prisma } from "@prisma/client"
 import { envCore } from "@/lib/env"
 import { getSystemStatus } from "@/lib/system-status"
 import { firefliesPing } from "@/lib/fireflies"
@@ -18,6 +18,25 @@ function addDays(date: Date, days: number) {
   d.setDate(d.getDate() + days)
   d.setHours(0, 0, 0, 0)
   return d
+}
+
+function toIso(date: Date) {
+  return date.toISOString()
+}
+
+function serializeObjective(objective: { id: string; content: string; updatedAt: Date }) {
+  return { id: objective.id, content: objective.content, updatedAt: toIso(objective.updatedAt) }
+}
+
+type AgendaItemRow = Prisma.AgendaItemGetPayload<Prisma.AgendaItemDefaultArgs>
+
+function serializeAgendaItem(item: AgendaItemRow) {
+  return {
+    ...item,
+    createdAt: toIso(item.createdAt),
+    completedAt: item.completedAt ? toIso(item.completedAt) : null,
+    dayDate: toIso(item.dayDate),
+  }
 }
 
 export async function fetchDashboardData() {
@@ -59,7 +78,14 @@ export async function fetchDashboardData() {
       },
     }))
 
-  return { objective: ensuredObjective, agendaItems, recentMeetings, userProfile, userSettings, systemStatus }
+  return {
+    objective: serializeObjective(ensuredObjective),
+    agendaItems: agendaItems.map(serializeAgendaItem),
+    recentMeetings,
+    userProfile,
+    userSettings,
+    systemStatus,
+  }
 }
 
 export async function fetchMorningSyncData() {
@@ -94,7 +120,13 @@ export async function fetchMorningSyncData() {
       },
     }))
 
-  return { objective: ensuredObjective, items, previousDayItems, userProfile, systemStatus }
+  return {
+    objective: serializeObjective(ensuredObjective),
+    items: items.map(serializeAgendaItem),
+    previousDayItems: previousDayItems.map(serializeAgendaItem),
+    userProfile,
+    systemStatus,
+  }
 }
 
 export async function fetchAfternoonWrapupData() {
@@ -124,7 +156,7 @@ export async function fetchAfternoonWrapupData() {
       },
     }))
 
-  return { objective: ensuredObjective, items, userProfile, systemStatus }
+  return { objective: serializeObjective(ensuredObjective), items: items.map(serializeAgendaItem), userProfile, systemStatus }
 }
 
 export async function triggerSync(type: "morning" | "afternoon") {
@@ -139,7 +171,7 @@ export async function triggerSync(type: "morning" | "afternoon") {
         requestedBy: "dashboard",
       },
     },
-    select: { id: true, type: true, status: true, createdAt: true },
+    select: { id: true, type: true, status: true },
   })
 
   revalidatePath("/")
@@ -156,7 +188,7 @@ export async function queueFirefliesSync() {
       status: "PENDING",
       payload: { requestedAt: new Date().toISOString(), requestedBy: "dashboard" },
     },
-    select: { id: true, type: true, status: true, createdAt: true },
+    select: { id: true, type: true, status: true },
   })
 
   revalidatePath("/")
@@ -229,19 +261,21 @@ export async function updateAgendaStatus(id: string, status: string) {
   const updated = await prisma.agendaItem.update({
     where: { id },
     data: { status: status as AgendaStatus, completedAt },
+    select: { id: true, status: true, completedAt: true },
   })
 
   revalidatePath("/")
   revalidatePath("/morning-sync")
   revalidatePath("/afternoon-wrapup")
 
-  return updated
+  return { ...updated, completedAt: updated.completedAt ? toIso(updated.completedAt) : null }
 }
 
 export async function updateAgendaProgressNote(id: string, progressNote: string | null) {
   const updated = await prisma.agendaItem.update({
     where: { id },
     data: { progressNote },
+    select: { id: true, progressNote: true },
   })
 
   revalidatePath("/")
@@ -256,11 +290,12 @@ export async function saveObjective(text: string) {
     where: { key: "current" },
     create: { key: "current", content: text },
     update: { content: text },
+    select: { id: true, content: true, updatedAt: true },
   })
 
   revalidatePath("/")
   revalidatePath("/morning-sync")
   revalidatePath("/afternoon-wrapup")
 
-  return updated
+  return serializeObjective(updated)
 }

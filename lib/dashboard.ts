@@ -1,4 +1,4 @@
-import type { AgendaItem } from "@/lib/types"
+import type { AgendaItemDTO } from "@/lib/dto"
 
 export function getNextAction(): { action: string; time: string } {
   const now = new Date()
@@ -10,7 +10,7 @@ export function getNextAction(): { action: string; time: string } {
   return { action: "Morning Sync", time: "Tomorrow 9:00 AM" }
 }
 
-export function getAgendaStats(items: AgendaItem[]) {
+export function getAgendaStats(items: AgendaItemDTO[]) {
   const total = items.length
   const completed = items.filter((i) => i.status === "completed").length
   const inProgress = items.filter((i) => i.status === "in_progress").length
@@ -19,4 +19,3 @@ export function getAgendaStats(items: AgendaItem[]) {
 
   return { total, completed, inProgress, pending, blockers }
 }
-

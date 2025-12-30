@@ -5,11 +5,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Target, Pencil, Check, X } from "lucide-react"
-import type { CompanyObjective } from "@/lib/types"
+import type { CompanyObjectiveDTO } from "@/lib/dto"
 import { toast } from "sonner"
 
 interface ObjectiveCardProps {
-  objective: CompanyObjective
+  objective: CompanyObjectiveDTO
   onSave?: (content: string) => unknown | Promise<unknown>
 }
 
@@ -100,7 +100,7 @@ export function ObjectiveCard({ objective, onSave }: ObjectiveCardProps) {
         ) : (
           <div className="space-y-2">
             <p className="text-sm leading-relaxed text-foreground">{objective.content}</p>
-            <p className="text-xs text-muted-foreground">Last updated: {formatDate(objective.updatedAt)}</p>
+            <p className="text-xs text-muted-foreground">Last updated: {formatDate(new Date(objective.updatedAt))}</p>
           </div>
         )}
       </CardContent>

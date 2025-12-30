@@ -18,12 +18,12 @@ import {
   FileCheck,
   RefreshCw,
 } from "lucide-react"
-import type { AgendaItem } from "@/lib/types"
+import type { AgendaItemDTO } from "@/lib/dto"
 
 interface AgendaItemCardProps {
-  item: AgendaItem
+  item: AgendaItemDTO
   showProgressInput?: boolean
-  onStatusChange?: (id: string, status: AgendaItem["status"]) => void
+  onStatusChange?: (id: string, status: AgendaItemDTO["status"]) => void
   onProgressUpdate?: (id: string, note: string) => void
 }
 

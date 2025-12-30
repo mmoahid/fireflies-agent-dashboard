@@ -4,13 +4,13 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { AgendaItemCard } from "@/components/agenda-item-card"
 import { Sun, Moon, CheckCircle2, Clock, AlertTriangle, ArrowRight } from "lucide-react"
-import type { AgendaItem } from "@/lib/types"
+import type { AgendaItemDTO } from "@/lib/dto"
 
 interface SyncAgendaProps {
   type: "morning" | "afternoon"
-  items: AgendaItem[]
-  previousDayItems?: AgendaItem[]
-  onStatusChange?: (id: string, status: AgendaItem["status"]) => void
+  items: AgendaItemDTO[]
+  previousDayItems?: AgendaItemDTO[]
+  onStatusChange?: (id: string, status: AgendaItemDTO["status"]) => void
   onProgressUpdate?: (id: string, note: string) => void
 }
 

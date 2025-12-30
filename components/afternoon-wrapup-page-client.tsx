@@ -9,27 +9,29 @@ import { ObjectiveCard } from "@/components/objective-card"
 import { SyncAgenda } from "@/components/sync-agenda"
 import { TodayProgress } from "@/components/today-progress"
 import { ArrowLeft, Save, ArrowRight } from "lucide-react"
-import type { AgendaItem, CompanyObjective } from "@/lib/types"
+import type { AgendaItemDTO, CompanyObjectiveDTO } from "@/lib/dto"
 import { getAgendaStats } from "@/lib/dashboard"
 import { saveObjective, updateAgendaProgressNote, updateAgendaStatus } from "@/lib/actions"
 import { toast } from "sonner"
 
 interface AfternoonWrapupPageClientProps {
-  objective: CompanyObjective
-  items: AgendaItem[]
+  objective: CompanyObjectiveDTO
+  items: AgendaItemDTO[]
 }
 
 export function AfternoonWrapupPageClient({ objective, items: initialItems }: AfternoonWrapupPageClientProps) {
-  const [items, setItems] = useState<AgendaItem[]>(initialItems)
+  const [items, setItems] = useState<AgendaItemDTO[]>(initialItems)
   const [wrapUpNotes, setWrapUpNotes] = useState("")
   const [isPending, startTransition] = useTransition()
 
   const agendaStats = getAgendaStats(items)
 
-  const handleStatusChange = (id: string, status: AgendaItem["status"]) => {
+  const handleStatusChange = (id: string, status: AgendaItemDTO["status"]) => {
     setItems((prev) =>
       prev.map((item) =>
-        item.id === id ? { ...item, status, completedAt: status === "completed" ? new Date() : null } : item,
+        item.id === id
+          ? { ...item, status, completedAt: status === "completed" ? new Date().toISOString() : null }
+          : item,
       ),
     )
 
@@ -140,4 +142,3 @@ export function AfternoonWrapupPageClient({ objective, items: initialItems }: Af
     </div>
   )
 }
-
