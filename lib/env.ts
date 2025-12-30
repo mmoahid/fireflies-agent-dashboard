@@ -26,38 +26,57 @@ const optionalString = z
     return normalized.length ? normalized : undefined
   })
 
-const EnvSchema = z.object({
+const CoreEnvSchema = z.object({
   DATABASE_URL: requiredString,
-  DIRECT_URL: requiredString,
-
-  FIREFLIES_API_KEY: requiredString,
-  GEMINI_API_KEY: optionalString,
-
-  SUPABASE_URL: optionalString,
-  SUPABASE_SERVICE_ROLE_KEY: optionalString,
-
-  DASHBOARD_USERNAME: requiredString,
-  DASHBOARD_PASSWORD: requiredString,
+  DIRECT_URL: optionalString,
+  DASHBOARD_USERNAME: optionalString,
+  DASHBOARD_PASSWORD: optionalString,
 })
 
-export type Env = z.infer<typeof EnvSchema>
+const IntegrationsEnvSchema = z.object({
+  FIREFLIES_API_KEY: requiredString,
+  GEMINI_API_KEY: optionalString,
+})
 
-let cachedEnv: Env | null = null
+const WorkerEnvSchema = z.object({
+  SUPABASE_URL: requiredString,
+  SUPABASE_SERVICE_ROLE_KEY: requiredString,
+})
 
-export function env(): Env {
-  if (cachedEnv) return cachedEnv
-  cachedEnv = EnvSchema.parse(process.env)
-  return cachedEnv
+export type CoreEnv = z.infer<typeof CoreEnvSchema>
+export type IntegrationsEnv = z.infer<typeof IntegrationsEnvSchema>
+export type WorkerEnv = z.infer<typeof WorkerEnvSchema>
+
+let cachedCore: CoreEnv | null = null
+export function envCore(): CoreEnv {
+  if (cachedCore) return cachedCore
+  cachedCore = CoreEnvSchema.parse(process.env)
+  return cachedCore
+}
+
+export function envIntegrations(): IntegrationsEnv {
+  return IntegrationsEnvSchema.parse(process.env)
+}
+
+export function envWorker(): WorkerEnv {
+  return WorkerEnvSchema.parse(process.env)
 }
 
 export function applySanitizedEnvToProcess() {
-  const e = env()
-  process.env.DATABASE_URL = e.DATABASE_URL
-  process.env.DIRECT_URL = e.DIRECT_URL
-  process.env.FIREFLIES_API_KEY = e.FIREFLIES_API_KEY
-  process.env.DASHBOARD_USERNAME = e.DASHBOARD_USERNAME
-  process.env.DASHBOARD_PASSWORD = e.DASHBOARD_PASSWORD
-  if (e.GEMINI_API_KEY) process.env.GEMINI_API_KEY = e.GEMINI_API_KEY
-  if (e.SUPABASE_URL) process.env.SUPABASE_URL = e.SUPABASE_URL
-  if (e.SUPABASE_SERVICE_ROLE_KEY) process.env.SUPABASE_SERVICE_ROLE_KEY = e.SUPABASE_SERVICE_ROLE_KEY
+  const core = envCore()
+  process.env.DATABASE_URL = core.DATABASE_URL
+  if (core.DIRECT_URL) process.env.DIRECT_URL = core.DIRECT_URL
+
+  const maybe = (name: string) => {
+    const raw = process.env[name]
+    const normalized = normalizeEnvValue(raw ?? "")
+    if (normalized.length) process.env[name] = normalized
+  }
+
+  maybe("DASHBOARD_USERNAME")
+  maybe("DASHBOARD_PASSWORD")
+  maybe("FIREFLIES_API_KEY")
+  maybe("GEMINI_API_KEY")
+  maybe("SUPABASE_URL")
+  maybe("SUPABASE_SERVICE_ROLE_KEY")
 }

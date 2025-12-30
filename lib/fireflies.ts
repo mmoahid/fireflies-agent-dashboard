@@ -1,6 +1,6 @@
 import "server-only"
 
-import { env } from "@/lib/env"
+import { envIntegrations } from "@/lib/env"
 
 const FIREFLIES_GRAPHQL_URL = "https://api.fireflies.ai/graphql"
 
@@ -10,7 +10,7 @@ async function firefliesGraphQL<TData>(
   query: string,
   variables?: Record<string, unknown>,
 ): Promise<TData> {
-  const { FIREFLIES_API_KEY } = env()
+  const { FIREFLIES_API_KEY } = envIntegrations()
 
   const res = await fetch(FIREFLIES_GRAPHQL_URL, {
     method: "POST",
@@ -43,4 +43,3 @@ export async function firefliesPing() {
 
   return data.user
 }
-

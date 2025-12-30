@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache"
 import { prisma } from "@/lib/prisma"
 import { AgendaStatus } from "@prisma/client"
-import { env } from "@/lib/env"
+import { envCore } from "@/lib/env"
 import { getSystemStatus } from "@/lib/system-status"
 import { firefliesPing } from "@/lib/fireflies"
 
@@ -37,7 +37,7 @@ export async function fetchDashboardData() {
     }),
     prisma.userProfile.upsert({
       where: { key: "default" },
-      create: { key: "default", displayName: env().DASHBOARD_USERNAME },
+      create: { key: "default", displayName: envCore().DASHBOARD_USERNAME ?? "Owner" },
       update: {},
       select: { displayName: true },
     }),
@@ -78,7 +78,7 @@ export async function fetchMorningSyncData() {
     }),
     prisma.userProfile.upsert({
       where: { key: "default" },
-      create: { key: "default", displayName: env().DASHBOARD_USERNAME },
+      create: { key: "default", displayName: envCore().DASHBOARD_USERNAME ?? "Owner" },
       update: {},
       select: { displayName: true },
     }),
@@ -108,7 +108,7 @@ export async function fetchAfternoonWrapupData() {
     }),
     prisma.userProfile.upsert({
       where: { key: "default" },
-      create: { key: "default", displayName: env().DASHBOARD_USERNAME },
+      create: { key: "default", displayName: envCore().DASHBOARD_USERNAME ?? "Owner" },
       update: {},
       select: { displayName: true },
     }),
@@ -185,7 +185,7 @@ export async function fetchSettingsData() {
   const [userProfile, userSettings, systemStatus] = await Promise.all([
     prisma.userProfile.upsert({
       where: { key: "default" },
-      create: { key: "default", displayName: env().DASHBOARD_USERNAME },
+      create: { key: "default", displayName: envCore().DASHBOARD_USERNAME ?? "Owner" },
       update: {},
       select: { displayName: true },
     }),
