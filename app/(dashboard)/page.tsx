@@ -5,13 +5,14 @@ import { RecentContextFeed } from "@/components/recent-context-feed"
 import { ObjectiveCard } from "@/components/objective-card"
 import { TodayProgress } from "@/components/today-progress"
 import { ControlPanel } from "@/components/control-panel"
-import { fetchDashboardData, saveObjective } from "@/lib/actions"
+import { fetchDashboardData, getFirefliesSyncStatus, saveObjective } from "@/lib/actions"
 import { getAgendaStats, getNextAction } from "@/lib/dashboard"
 
 export const dynamic = "force-dynamic"
 
 export default async function DashboardPage() {
   const { objective, agendaItems, recentMeetings, userProfile, userSettings, systemStatus } = await fetchDashboardData()
+  const firefliesSync = await getFirefliesSyncStatus()
 
   const nextAction = getNextAction()
   const agendaStats = getAgendaStats(agendaItems)
@@ -31,7 +32,7 @@ export default async function DashboardPage() {
         <div className="space-y-6">
           <TodayProgress stats={agendaStats} />
           <RecentContextFeed meetings={recentMeetings} />
-          <ControlPanel settings={userSettings} />
+          <ControlPanel settings={userSettings} firefliesSync={firefliesSync} />
         </div>
       </div>
     </div>

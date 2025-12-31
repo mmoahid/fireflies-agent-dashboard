@@ -11,9 +11,10 @@ import { queueFirefliesSync, triggerSync, updateUserSettings } from "@/lib/actio
 
 interface ControlPanelProps {
   settings: { manualOverride: boolean; autoSync: boolean; notifications: boolean }
+  firefliesSync: { meetingCount: number; pendingCount: number; processingCount: number }
 }
 
-export function ControlPanel({ settings }: ControlPanelProps) {
+export function ControlPanel({ settings, firefliesSync }: ControlPanelProps) {
   const [manualOverride, setManualOverride] = useState(settings.manualOverride)
   const [isPending, startTransition] = useTransition()
 
@@ -80,6 +81,10 @@ export function ControlPanel({ settings }: ControlPanelProps) {
           <RefreshCw className="h-4 w-4" />
           Sync Meetings (Fireflies)
         </Button>
+        <p className="text-xs text-muted-foreground">
+          Meetings in DB: {firefliesSync.meetingCount} · Jobs: {firefliesSync.processingCount} processing /{" "}
+          {firefliesSync.pendingCount} pending
+        </p>
 
         <div className="grid gap-2 sm:grid-cols-2">
           <Button variant="secondary" className="w-full" onClick={() => queueSync("morning")} disabled={isPending}>

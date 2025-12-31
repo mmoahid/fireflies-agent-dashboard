@@ -39,8 +39,19 @@ Continue building your app on:
 
 ## Python Worker
 
-The background worker polls the `job_queue` table and processes jobs (e.g., syncing Fireflies transcripts).
+The background worker polls the `job_queue` table and processes jobs (e.g., syncing Fireflies transcripts). The web app (Vercel) only queues jobs; the worker is what actually executes them.
 
-- Install deps: `pip install supabase`
+- Install deps: `pip install -r requirements.txt`
 - If you want `worker.py` to load `.env.local` automatically: `pip install python-dotenv`
 - Run: `python worker.py`
+
+## Deploy Worker (Render)
+
+This repo includes `render.yaml` to deploy the Python worker as a background service.
+
+1. Create a new Render service from this repo (Blueprint).
+2. Set env vars on Render:
+   - `SUPABASE_URL`
+   - `SUPABASE_SERVICE_ROLE_KEY`
+   - `FIREFLIES_API_KEY`
+3. Deploy.

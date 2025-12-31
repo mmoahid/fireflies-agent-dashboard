@@ -198,6 +198,28 @@ export async function queueFirefliesSync() {
   return job
 }
 
+export async function getFirefliesSyncStatus() {
+  const [meetingCount, pendingCount, processingCount, lastJob] = await Promise.all([
+    prisma.meeting.count(),
+    prisma.jobQueue.count({ where: { type: "SYNC_FIREFLIES_ALL", status: "PENDING" } }),
+    prisma.jobQueue.count({ where: { type: "SYNC_FIREFLIES_ALL", status: "PROCESSING" } }),
+    prisma.jobQueue.findFirst({
+      where: { type: "SYNC_FIREFLIES_ALL" },
+      orderBy: { createdAt: "desc" },
+      select: { id: true, status: true, createdAt: true, updatedAt: true },
+    }),
+  ])
+
+  return {
+    meetingCount,
+    pendingCount,
+    processingCount,
+    lastJob: lastJob
+      ? { ...lastJob, createdAt: toIso(lastJob.createdAt), updatedAt: toIso(lastJob.updatedAt) }
+      : null,
+  }
+}
+
 export async function getRecentMeetings() {
   return prisma.meeting.findMany({
     orderBy: { dateTime: "desc" },

@@ -1,7 +1,7 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { getAllMeetings } from "@/lib/actions"
+import { getAllMeetings, getFirefliesSyncStatus } from "@/lib/actions"
 import { SyncMeetingsButton } from "@/components/sync-meetings-button"
 import {
   Video,
@@ -57,6 +57,7 @@ export default async function MeetingsPage() {
   }
 
   const meetings = await getAllMeetings()
+  const syncStatus = await getFirefliesSyncStatus()
 
   return (
     <div className="space-y-6">
@@ -67,6 +68,17 @@ export default async function MeetingsPage() {
         </div>
         <SyncMeetingsButton />
       </div>
+
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base">Fireflies Sync Status</CardTitle>
+          <CardDescription>
+            Meetings in DB: {syncStatus.meetingCount} · Jobs: {syncStatus.processingCount} processing /{" "}
+            {syncStatus.pendingCount} pending
+            {syncStatus.lastJob ? ` · Last queued: ${new Date(syncStatus.lastJob.createdAt).toLocaleString()}` : ""}
+          </CardDescription>
+        </CardHeader>
+      </Card>
 
       <Card>
         <CardHeader>
