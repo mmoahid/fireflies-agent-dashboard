@@ -155,8 +155,8 @@ def sync_fireflies_all(supabase, fireflies_api_key: str) -> int:
 
 def main() -> None:
     load_local_env()
-    supabase_url = os.environ["SUPABASE_URL"]
-    supabase_service_role_key = os.environ["SUPABASE_SERVICE_ROLE_KEY"]
+    supabase_url = os.environ["SUPABASE_URL"].strip()
+    supabase_service_role_key = os.environ["SUPABASE_SERVICE_ROLE_KEY"].strip()
     fireflies_api_key = os.environ.get("FIREFLIES_API_KEY", "").strip()
 
     supabase = create_client(supabase_url, supabase_service_role_key)
